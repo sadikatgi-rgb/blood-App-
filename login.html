@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS Login</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="format-detection" content="telephone=no">
+</head>
+<body>
+    <div class="container welcome-container">
+        <div class="welcome-card">
+            <h2 style="color: #c62828;">SYS Login</h2>
+            <p style="margin-bottom: 20px; color: #666;">തുടരാൻ ലോഗിൻ ചെയ്യുക</p>
+            
+            <form id="loginForm" class="login-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" class="start-btn" style="width: 100%; border: none; margin-top: 10px;">Login</button>
+            </form>
+            
+            <p id="errorMsg" style="color: red; font-size: 13px; margin-top: 15px; display: none;"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // നിങ്ങളുടെ Firebase Config ഇവിടെ കൃത്യമായി നൽകുക
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJVo2JzF9fko23PujwJfN0B2wBYME7QFY",
+            authDomain: "blood-7c771.firebaseapp.com",
+            projectId: "blood-7c771",
+            storageBucket: "blood-7c771.firebasestorage.app",
+            messagingSenderId: "812673918946",
+            appId: "1:812673918946:web:0a036596ed17335be93bbb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById('loginForm');
+        const errorMsg = document.getElementById('errorMsg');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+
+            try {
+                // Firestore-ലെ 'users' കളക്ഷനിൽ നിന്ന് യൂസറെ തിരയുന്നു
+                const userRef = doc(db, "users", usernameInput);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    
+                    // പാസ്‌വേഡ് പരിശോധന
+                    if (userData.password === passwordInput) {
+                        // ലോഗിൻ സെഷൻ സേവ് ചെയ്യുന്നു
+                        sessionStorage.setItem("isLoggedIn", "true");
+                        // രജിസ്‌ട്രേഷൻ പേജിലേക്ക് പോകുന്നു
+                        window.location.href = "register.html";
+                    } else {
+                        errorMsg.innerText = "പാസ്‌വേഡ് തെറ്റാണ്!";
+                        errorMsg.style.display = 'block';
+                    }
+                } else {
+                    errorMsg.innerText = "യൂസർനെയിം തെറ്റാണ്!";
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Login Error:", error);
+                errorMsg.innerText = "ലോഗിൻ ചെയ്യാൻ സാധിക്കുന്നില്ല. ഇന്റർനെറ്റ് പരിശോധിക്കുക.";
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
+
+

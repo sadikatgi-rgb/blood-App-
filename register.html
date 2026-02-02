@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <script>if(sessionStorage.getItem("isLoggedIn")!=="true") window.location.href="login.html";</script>
+</head>
+<body>
+    <div class="container">
+        <h2>🩸 രജിസ്റ്റർ ചെയ്യുക</h2>
+        <form id="donorForm">
+            <input type="text" id="name" placeholder="പേര്" required>
+            <input type="number" id="age" placeholder="വയസ്സ്" required>
+            <select id="bloodGroup" required>
+                <option value="" disabled selected>ബ്ലഡ് ഗ്രൂപ്പ്</option>
+                <option value="A+">A+</option><option value="B+">B+</option><option value="O+">O+</option>
+                <option value="AB+">AB+</option><option value="A-">A-</option><option value="B-">B-</option>
+                <option value="O-">O-</option><option value="AB-">AB-</option>
+            </select>
+            <select id="circle" required>
+                <option value="" disabled selected>Circle തിരഞ്ഞെടുക്കുക</option>
+                <option value="നെടുവ">നെടുവ</option><option value="പരപ്പനങ്ങാടി">പരപ്പനങ്ങാടി</option>
+                <option value="ചെട്ടിപ്പടി">ചെട്ടിപ്പടി</option><option value="അരിയല്ലൂർ">അരിയല്ലൂർ</option>
+                <option value="വള്ളിക്കുന്ന്">വള്ളിക്കുന്ന്</option>
+            </select>
+            <input type="tel" id="phone" placeholder="ഫോൺ നമ്പർ" required>
+            <label>അവസാനം രക്തം നൽകിയ തീയതി:</label>
+            <input type="date" id="lastDonation">
+            <button type="submit">രജിസ്റ്റർ ചെയ്യുക</button>
+        </form>
+        <a href="list.html" class="nav-link">പട്ടിക കാണുക ➔</a>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

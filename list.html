@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>📋 ദാതാക്കളുടെ പട്ടിക</h2>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="പേര്, സ്ഥലം തിരയുക..." onkeyup="filterDonors()">
+        </div>
+        <ul id="donorList"></ul>
+        <a href="register.html" class="nav-link">⇠ തിരികെ പോകുക</a>
+
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <h3>വിവരങ്ങൾ മാറ്റുക</h3>
+                <input type="text" id="editName">
+                <input type="number" id="editAge">
+                <input type="tel" id="editPhone">
+                <select id="editCircle">
+                    <option value="നെടുവ">നെടുവ</option><option value="പരപ്പനങ്ങാടി">പരപ്പനങ്ങാടി</option>
+                    <option value="ചെട്ടിപ്പടി">ചെട്ടിപ്പടി</option><option value="അരിയല്ലൂർ">അരിയല്ലൂർ</option>
+                    <option value="വള്ളിക്കുന്ന്">വള്ളിക്കുന്ന്</option>
+                </select>
+                <input type="date" id="editDate">
+                <div class="modal-actions">
+                    <button onclick="saveEdit()" class="save-btn">Save</button>
+                    <button onclick="closeModal()" class="close-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
+
