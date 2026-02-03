@@ -5,7 +5,7 @@ self.addEventListener('install', (e) => {
         'index.html',
         'style.css',
         'script.js',
-        'blood-donation.jpg'
+        'sys.png'
       ]);
     })
   );
