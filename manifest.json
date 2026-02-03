@@ -1,0 +1,20 @@
+{
+  "name": "SYS Blood Bank Parappanangadi",
+  "short_name": "SYS Blood",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c62828",
+  "icons": [
+    {
+      "src": "blood-donation.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "blood-donation.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
