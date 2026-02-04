@@ -22,61 +22,57 @@
             <p id="errorMsg" style="color: red; font-size: 13px; margin-top: 15px; display: none;"></p>
         </div>
     </div>
+   <script type="module">
+    // 1. ആവശ്യമായ ഫംഗ്ഷനുകൾ ഇമ്പോർട്ട് ചെയ്യുന്നു
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // നിങ്ങളുടെ Firebase Config (ഇത് അവിടെത്തന്നെയുണ്ട്)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDJVo2JzF9fko23PujwJfN0B2wBYME7QFY",
+        authDomain: "blood-7c771.firebaseapp.com",
+        projectId: "blood-7c771",
+        storageBucket: "blood-7c771.firebasestorage.app",
+        messagingSenderId: "812673918946",
+        appId: "1:812673918946:web:0a036596ed17335be93bbb"
+    };
 
-        // നിങ്ങളുടെ Firebase Config ഇവിടെ കൃത്യമായി നൽകുക
-        const firebaseConfig = {
-            apiKey: "AIzaSyDJVo2JzF9fko23PujwJfN0B2wBYME7QFY",
-            authDomain: "blood-7c771.firebaseapp.com",
-            projectId: "blood-7c771",
-            storageBucket: "blood-7c771.firebasestorage.app",
-            messagingSenderId: "812673918946",
-            appId: "1:812673918946:web:0a036596ed17335be93bbb"
-        };
+    // 2. ഫയർബേസ് ഇനീഷ്യലൈസ് ചെയ്യുന്നു
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
 
-        const loginForm = document.getElementById('loginForm');
-        const errorMsg = document.getElementById('errorMsg');
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const usernameInput = document.getElementById('username').value.trim();
+        const passwordInput = document.getElementById('password').value.trim();
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        try {
+            // 3. യൂസർനെയിമിനെ ഇമെയിൽ രൂപത്തിലേക്ക് മാറ്റുന്നു (ഉദാ: 101ChiraS@myapp.com)
+            const email = usernameInput + "@sys.com"; 
+
+            // 4. Firebase Auth ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുന്നു
+            const userCredential = await signInWithEmailAndPassword(auth, email, passwordInput);
+            const user = userCredential.user;
+
+            // ലോഗിൻ വിജയിച്ചാൽ സെഷൻ സേവ് ചെയ്യുന്നു
+            sessionStorage.setItem("isLoggedIn", "true");
+            sessionStorage.setItem("userId", user.uid); 
             
-            const usernameInput = document.getElementById('username').value.trim();
-            const passwordInput = document.getElementById('password').value.trim();
+            window.location.href = "register.html";
 
-            try {
-                // Firestore-ലെ 'users' കളക്ഷനിൽ നിന്ന് യൂസറെ തിരയുന്നു
-                const userRef = doc(db, "users", usernameInput);
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    
-                    // പാസ്‌വേഡ് പരിശോധന
-                    if (userData.password === passwordInput) {
-                        // ലോഗിൻ സെഷൻ സേവ് ചെയ്യുന്നു
-                        sessionStorage.setItem("isLoggedIn", "true");
-                        // രജിസ്‌ട്രേഷൻ പേജിലേക്ക് പോകുന്നു
-                        window.location.href = "register.html";
-                    } else {
-                        errorMsg.innerText = "പാസ്‌വേഡ് തെറ്റാണ്!";
-                        errorMsg.style.display = 'block';
-                    }
-                } else {
-                    errorMsg.innerText = "യൂസർനെയിം തെറ്റാണ്!";
-                    errorMsg.style.display = 'block';
-                }
-            } catch (error) {
-                console.error("Login Error:", error);
-                errorMsg.innerText = "ലോഗിൻ ചെയ്യാൻ സാധിക്കുന്നില്ല. ഇന്റർനെറ്റ് പരിശോധിക്കുക.";
-                errorMsg.style.display = 'block';
-            }
-        });
-    </script>
+        } catch (error) {
+            console.error("Login Error:", error.code);
+            // തെറ്റായ വിവരങ്ങൾ നൽകിയാൽ കാണിക്കേണ്ട മെസ്സേജ്
+            errorMsg.innerText = "യൂണിറ്റ് ഐഡിയോ പാസ്‌വേഡോ തെറ്റാണ്!";
+            errorMsg.style.display = 'block';
+        }
+    });
+</script>
 </body>
 </html>
