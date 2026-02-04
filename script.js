@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDJVo2JzF9fko23PujwJfN0B2wBYME7QFY",
@@ -12,24 +13,42 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app); // Auth ഇനീഷ്യലൈസ് ചെയ്യുന്നു
 const donorCollection = collection(db, 'donors');
 
-// Add Donor
+// Add Donor - ഇവിടെയാണ് മാറ്റം വരുത്തിയത്
 const form = document.getElementById('donorForm');
 if (form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        await addDoc(donorCollection, {
-            name: document.getElementById('name').value,
-            age: document.getElementById('age').value,
-            bloodGroup: document.getElementById('bloodGroup').value,
-            circle: document.getElementById('circle').value,
-             unit: document.getElementById('unit').value,
-            phone: document.getElementById('phone').value,
-            lastDonation: document.getElementById('lastDonation').value
-        });
-        alert("വിജയകരമായി ചേർത്തു!");
-        form.reset();
+        
+        // ലോഗിൻ ചെയ്ത യൂണിറ്റിന്റെ UID എടുക്കുന്നു
+        const sessionUserId = sessionStorage.getItem("userId");
+        
+        if (!sessionUserId) {
+            alert("ദയവായി ലോഗിൻ ചെയ്യുക!");
+            window.location.href = "login.html";
+            return;
+        }
+
+        try {
+            await addDoc(donorCollection, {
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                bloodGroup: document.getElementById('bloodGroup').value,
+                circle: document.getElementById('circle').value,
+                unit: document.getElementById('unit').value,
+                phone: document.getElementById('phone').value,
+                lastDonation: document.getElementById('lastDonation').value,
+                addedBy: sessionUserId, // ആഡ് ചെയ്ത യൂണിറ്റിനെ തിരിച്ചറിയാൻ
+                createdAt: serverTimestamp()
+            });
+            alert("വിജയകരമായി ചേർത്തു!");
+            form.reset();
+        } catch (error) {
+            console.error("Error:", error);
+            alert("ഡാറ്റ ചേർക്കാൻ സാധിച്ചില്ല. ലോഗിൻ നില പരിശോധിക്കുക.");
+        }
     });
 }
 
@@ -40,11 +59,11 @@ if (donorList) {
         donorList.innerHTML = '';
         snapshot.docs.forEach(docSnap => {
             const d = docSnap.data();
-            const cleanPhone = d.phone.toString().replace(/\D/g, '');
+            const cleanPhone = d.phone ? d.phone.toString().replace(/\D/g, '') : '';
             const li = document.createElement('li');
             li.innerHTML = `
                 <strong>${d.name} (${d.bloodGroup})</strong>
-                <p>📍 ${d.circle} |🩸 ${d.unit} | 🎂 ${d.age} | 📅 ${d.lastDonation || 'N/A'}</p>
+                <p>📍 ${d.circle} | 🩸 ${d.unit} | 🎂 ${d.age} | 📅 ${d.lastDonation || 'N/A'}</p>
                 <div class="actions">
                     <button class="call-btn" onclick="makeCall('${cleanPhone}')">📞 Call</button>
                     <button class="edit-btn" onclick="openEdit('${docSnap.id}','${d.name}','${d.age}','${d.phone}','${d.circle}','${d.unit}','${d.lastDonation}')">Edit</button>
@@ -56,9 +75,18 @@ if (donorList) {
     });
 }
 
-window.makeCall = (phone) => { window.location.href = "tel:" + phone; };
+// Window Functions
+window.makeCall = (phone) => { if(phone) window.location.href = "tel:" + phone; };
 
-window.deleteDonor = async (id) => { if(confirm("ഒഴിവാക്കണോ?")) await deleteDoc(doc(db, 'donors', id)); };
+window.deleteDonor = async (id) => { 
+    if(confirm("ഒഴിവാക്കണോ?")) {
+        try {
+            await deleteDoc(doc(db, 'donors', id)); 
+        } catch (e) {
+            alert("ഇത് ഒഴിവാക്കാൻ നിങ്ങൾക്ക് അനുവാദമില്ല.");
+        }
+    }
+};
 
 let editId = null;
 window.openEdit = (id, n, a, p, c, u, d) => {
@@ -73,15 +101,20 @@ window.openEdit = (id, n, a, p, c, u, d) => {
 };
 
 window.saveEdit = async () => {
-    await updateDoc(doc(db, 'donors', editId), {
-        name: document.getElementById('editName').value,
-        age: document.getElementById('editAge').value,
-        phone: document.getElementById('editPhone').value,
-        circle: document.getElementById('editCircle').value,
-        unit: document.getElementById('editUnit').value,
-        lastDonation: document.getElementById('editDate').value
-    });
-    document.getElementById('editModal').style.display = 'none';
+    try {
+        await updateDoc(doc(db, 'donors', editId), {
+            name: document.getElementById('editName').value,
+            age: document.getElementById('editAge').value,
+            phone: document.getElementById('editPhone').value,
+            circle: document.getElementById('editCircle').value,
+            unit: document.getElementById('editUnit').value,
+            lastDonation: document.getElementById('editDate').value
+        });
+        document.getElementById('editModal').style.display = 'none';
+        alert("മാറ്റങ്ങൾ സേവ് ചെയ്തു!");
+    } catch (e) {
+        alert("മാറ്റം വരുത്താൻ നിങ്ങൾക്ക് അനുവാദമില്ല.");
+    }
 };
 
 window.closeModal = () => document.getElementById('editModal').style.display = 'none';
@@ -92,55 +125,23 @@ window.filterDonors = () => {
         li.style.display = li.innerText.toLowerCase().includes(q) ? 'block' : 'none';
     });
 };
-// സൈഡ്ബാർ തുറക്കാൻ
-window.openNav = () => {
-    document.getElementById("mySidebar").style.width = "250px";
-};
 
-// സൈഡ്ബാർ അടയ്ക്കാൻ
-window.closeNav = () => {
-    document.getElementById("mySidebar").style.width = "0";
-};
+window.openNav = () => document.getElementById("mySidebar").style.width = "250px";
+window.closeNav = () => document.getElementById("mySidebar").style.width = "0";
 
-// ലോഗൗട്ട് ചെയ്യാൻ
-window.logout = () => {
-    sessionStorage.removeItem("isLoggedIn");
-    window.location.replace("login.html");
-};
-
-/* മെനു തുറക്കാൻ */
-window.openNav = () => {
-    document.getElementById("mySidebar").style.width = "250px";
-};
-
-/* മെനു അടയ്ക്കാൻ */
-window.closeNav = () => {
-    document.getElementById("mySidebar").style.width = "0";
-};
-
-/* രക്തദാന വിവരങ്ങൾ തുറക്കാൻ */
 window.openInfoModal = () => {
     document.getElementById("infoModal").style.display = "flex";
-    window.closeNav(); // മെനു അടയ്ക്കുന്നു
+    window.closeNav();
 };
+window.closeInfoModal = () => document.getElementById("infoModal").style.display = "none";
 
-/* രക്തദാന വിവരങ്ങൾ അടയ്ക്കാൻ */
-window.closeInfoModal = () => {
-    document.getElementById("infoModal").style.display = "none";
-};
-
-/* ലോഗൗട്ട് ചെയ്യാൻ */
 window.logout = () => {
     if(confirm("Logout ചെയ്യണോ?")) {
-        sessionStorage.removeItem("isLoggedIn");
+        sessionStorage.clear(); // എല്ലാ വിവരങ്ങളും ക്ലിയർ ചെയ്യുന്നു
         window.location.replace("login.html");
     }
 };
 
-/* വിൻഡോയ്ക്ക് പുറത്ത് ക്ലിക്ക് ചെയ്താൽ അടയ്ക്കാൻ */
 window.onclick = (event) => {
-    let modal = document.getElementById("infoModal");
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
+    if (event.target == document.getElementById("infoModal")) closeModal();
 };
