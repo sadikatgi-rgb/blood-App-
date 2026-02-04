@@ -52,7 +52,7 @@ p.sub-title {
 
 /* Navbar */
 .navbar {
-    background-color: #333; padding: 15px; display: flex;
+    background-color: #333; padding: 8px 15px; display: flex;
     align-items: center; color: white; position: fixed;
     top: 0; width: 100%; z-index: 1000;
 }
@@ -75,7 +75,7 @@ p.sub-title {
 .donation-rules li strong { color: #c62828; }
 .close-icon { float: right; font-size: 28px; cursor: pointer; color: #333; }
 .welcome-container, .container {
-    margin-top: 30px !important;
+    margin-top: 70px !important;
 }
 .menu-bar {
     margin-bottom: 25px; /* മെനുവിന് താഴെ 15px സ്ഥലം നൽകാൻ */
